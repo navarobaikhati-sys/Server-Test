@@ -1,0 +1,63 @@
+# Maintainer: PrismLauncher Modern Redesign
+# Contributor: Codebuff AI
+
+pkgname=prismmodern
+pkgver=1.0.0
+pkgrel=1
+pkgdesc="Modern Minecraft-inspired Prism Launcher redesign with Qt 6, C++20, and QSS"
+arch=('x86_64')
+url="https://github.com/PrismLauncher/PrismLauncher"
+license=('MIT')
+depends=('qt6-base' 'qt6-declarative' 'qt6-tools')
+makedepends=('cmake' 'qt6-base' 'qt6-declarative')
+optdepends=('jre: Java runtime for Minecraft launching'
+            'ffmpeg: Media support')
+source=("prismmodern-${pkgver}.tar.gz")
+sha256sums=('SKIP')
+
+# Version string for QML
+pkgdesc="Modern Minecraft-inspired Prism Launcher redesign"
+
+prepare() {
+    # Create build directory
+    mkdir -p "${srcdir}/prismmodern/build"
+}
+
+build() {
+    cd "${srcdir}/prismmodern/build"
+    
+    cmake .. \
+        -DCMAKE_BUILD_TYPE=Release \
+        -DCMAKE_INSTALL_PREFIX=/usr \
+        -DCMAKE_INSTALL_LIBDIR=lib \
+        -DQt6_DIR=/usr/lib/cmake/Qt6 \
+        -DFONTCONFIG_USE_FOONLY=TRUE
+    
+    make
+}
+
+package() {
+    cd "${srcdir}/prismmodern/build"
+    
+    make DESTDIR="${pkgdir}" install
+    
+    # Install license
+    install -Dm644 "${srcdir}/prismmodern/LICENSE" \
+        "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+    
+    # Install README
+    install -Dm644 "${srcdir}/prismmodern/README.md" \
+        "${pkgdir}/usr/share/doc/${pkgname}/README.md"
+    
+    # Install desktop file if present
+    if [ -f "${srcdir}/prismmodern/data/prismmodern.desktop" ]; then
+        install -Dm644 "${srcdir}/prismmodern/data/prismmodern.desktop" \
+            "${pkgdir}/usr/share/applications/prismmodern.desktop"
+    fi
+    
+    # Install icon if present
+    if [ -f "${srcdir}/prismmodern/data/prismmodern.svg" ]; then
+        install -Dm644 "${srcdir}/prismmodern/data/prismmodern.svg" \
+            "${pkgdir}/usr/share/icons/hicolor/scalable/apps/prismmodern.svg"
+    fi
+}
